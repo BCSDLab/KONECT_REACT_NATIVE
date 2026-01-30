@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const WEB_URL = 'https://agit.gg';
 
@@ -28,7 +29,7 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <WebView
         ref={webViewRef}
         onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
@@ -41,7 +42,7 @@ export default function RootLayout() {
         applicationNameForUserAgent="KONECT_APP"
         startInLoadingState
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
