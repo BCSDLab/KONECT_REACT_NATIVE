@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StyleSheet, View } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +30,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle={'dark-content'} />
       <WebView
         ref={webViewRef}
         onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
