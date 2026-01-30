@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
