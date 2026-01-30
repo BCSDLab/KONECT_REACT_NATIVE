@@ -23,6 +23,7 @@
       }
     },
     "android": {
+      "versionCode": 10,
       "package": "com.bcsdlab.konect",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -37,8 +38,7 @@
             "kotlinVersion": "1.9.25",
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0",
-            "versionCode": 3
+            "buildToolsVersion": "35.0.0"
           }
         }
       ],
