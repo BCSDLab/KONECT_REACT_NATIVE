@@ -3,13 +3,15 @@ import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { generateUserAgent } from '../utils/userAgent';
 
 const WEB_URL = 'https://agit.gg';
 
 export default function RootLayout() {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
-  
+  const userAgent = generateUserAgent();
+
   useEffect(() => {
     if (Platform.OS === 'android') {
       const onBackPress = () => {
@@ -40,7 +42,7 @@ export default function RootLayout() {
         domStorageEnabled
         thirdPartyCookiesEnabled
         sharedCookiesEnabled
-        applicationNameForUserAgent="KONECT_APP"
+        userAgent={userAgent}
         startInLoadingState
       />
     </SafeAreaView>
