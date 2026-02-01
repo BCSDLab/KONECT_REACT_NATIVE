@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
-import { Slot, Link, useRouter } from 'expo-router';
+import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateUserAgent } from '../utils/userAgent';
@@ -10,9 +10,8 @@ const WEB_URL = 'https://agit.gg';
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
-  const [needForceUpdate, setNeedForceUpdate] = useState(false);
   const userAgent = generateUserAgent();
-  const router = useRouter();
+
   useEffect(() => {
     if (Platform.OS === 'android') {
       const onBackPress = () => {
@@ -26,12 +25,6 @@ export default function Index() {
       return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }
   }, [canGoBack]);
-
-  useEffect(() => {
-    if (needForceUpdate) {
-      router.replace('/forceupdatemodal');
-    }
-  }, [needForceUpdate]);
 
   if (Platform.OS === 'web') {
     return <Slot />;
