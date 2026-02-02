@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 
 export default function RootLayout() {

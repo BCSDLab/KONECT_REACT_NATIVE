@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
