@@ -9,22 +9,19 @@ import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 const WEB_URL = 'https://agit.gg';
 const userAgent = generateUserAgent();
 
-const handleOnShouldStartLoadWithRequest = (event: ShouldStartLoadRequest) => {
-  if (event.url.startsWith('http://') || event.url.startsWith('https://')) {
-    return true;
-  }
-
-  Linking.canOpenURL(event.url)
-    .then((canOpen) => {
-      if (canOpen) {
-        Linking.openURL(event.url);
+const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
+  if (/^https?:\/\//i.test(url)) return true;
+  (async () => {
+    try {
+      if (await Linking.canOpenURL(url)) {
+        await Linking.openURL(url);
       } else {
         Alert.alert('앱이 설치되지 않았습니다.');
       }
-    })
-    .catch((err) => {
-      console.error(err);
-    });
+    } catch (e) {
+      console.error(e);
+    }
+  })();
   return false;
 };
 
