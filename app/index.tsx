@@ -6,11 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateUserAgent } from '../utils/userAgent';
 
 const WEB_URL = 'https://agit.gg';
+const userAgent = generateUserAgent();
 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const [canGoBack, setCanGoBack] = useState(false);
-  const userAgent = generateUserAgent();
 
   useEffect(() => {
     if (Platform.OS === 'android') {
