@@ -1,12 +1,29 @@
 import { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateUserAgent } from '../utils/userAgent';
+import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
 const WEB_URL = 'https://agit.gg';
 const userAgent = generateUserAgent();
+
+const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
+  if (/^https?:\/\//i.test(url)) return true;
+  (async () => {
+    try {
+      if (await Linking.canOpenURL(url)) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('앱이 설치되지 않았습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  })();
+  return false;
+};
 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
@@ -43,6 +60,8 @@ export default function Index() {
         thirdPartyCookiesEnabled
         sharedCookiesEnabled
         userAgent={userAgent}
+        onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
+        originWhitelist={['*']}
         startInLoadingState
       />
     </SafeAreaView>
