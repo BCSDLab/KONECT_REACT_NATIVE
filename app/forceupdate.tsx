@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   updateButton: {
     height: 56,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#323532',
     borderRadius: 8,
     borderWidth: 0.5,
     borderColor: '#D6DAE0',
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButtonText: {
+    color: '021730',
     textAlign: 'center',
     fontWeight: '600',
   },
