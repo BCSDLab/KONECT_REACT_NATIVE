@@ -19,7 +19,7 @@ const storeUrl = (): string => {
   return '';
 };
 
-export default function Modal() {
+export default function ForceUpdate() {
   function openStore() {
     Linking.openURL(storeUrl());
   }
