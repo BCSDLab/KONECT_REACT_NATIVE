@@ -2,7 +2,7 @@
   "expo": {
     "name": "KONECT",
     "slug": "konect-react-native",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/adaptive-icon.png",
     "scheme": "konect",
@@ -18,7 +18,7 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "bundleIdentifier": "com.bcsdlab.konect",
-      "buildNumber": "3",
+      "buildNumber": "5",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
