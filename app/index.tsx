@@ -11,6 +11,7 @@ const userAgent = generateUserAgent();
 
 const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
   if (/^https?:\/\//i.test(url)) return true;
+  if (url === 'about:blank') return false;
   (async () => {
     try {
       if (await Linking.canOpenURL(url)) {

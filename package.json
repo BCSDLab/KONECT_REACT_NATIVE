@@ -25,6 +25,7 @@
     "@react-navigation/stack": "^7.1.2",
     "expo": "^54.0.0",
     "expo-apple-authentication": "~8.0.8",
+    "expo-application": "~7.0.8",
     "expo-av": "~16.0.8",
     "expo-blur": "~15.0.8",
     "expo-build-properties": "~1.0.10",
@@ -41,17 +42,17 @@
     "expo-status-bar": "~3.0.9",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-native": "^0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
-    "react-native-svg": "^15.12.1",
+    "react-native-svg": "15.12.1",
     "react-native-toast-message": "^2.2.1",
     "react-native-web": "^0.21.2",
-    "react-native-webview": "^13.15.0",
+    "react-native-webview": "13.15.0",
     "react-native-worklets": "0.5.1",
     "zustand": "^5.0.4"
   },
@@ -66,5 +67,10 @@
     "jest-expo": "~54.0.17",
     "react-test-renderer": "^19.1.0",
     "typescript": "^5.3.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@expo/metro-runtime": "5.0.4"
+    }
   }
 }
