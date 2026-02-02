@@ -24,7 +24,7 @@
       }
     },
     "android": {
-      "versionCode": 10,
+      "versionCode": 11,
       "package": "com.bcsdlab.konect",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
