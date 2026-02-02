@@ -1,12 +1,23 @@
 import { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, Linking } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateUserAgent } from '../utils/userAgent';
+import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
 const WEB_URL = 'https://agit.gg';
 const userAgent = generateUserAgent();
+
+const handleOnShouldStartLoadWithRequest = (event: ShouldStartLoadRequest) => {
+  console.log(event.url);
+  if (event.url.startsWith('http://') || event.url.startsWith('https://')) {
+    return true;
+  }
+
+  Linking.openURL(event.url);
+  return false;
+};
 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
@@ -43,6 +54,8 @@ export default function Index() {
         thirdPartyCookiesEnabled
         sharedCookiesEnabled
         userAgent={userAgent}
+        onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
+        originWhitelist={['*']}
         startInLoadingState
       />
     </SafeAreaView>
