@@ -6,8 +6,8 @@ import {
   StatusBar,
   Linking,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { exitApp } from '@logicwind/react-native-exit-app';
 
 const storeUrl = (): string => {
@@ -45,7 +45,6 @@ export default function ForceUpdate() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 40,
     flex: 1,
   },
   title: {
