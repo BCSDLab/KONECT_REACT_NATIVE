@@ -19,7 +19,7 @@ export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="forceupdatel" />
+      <Stack.Screen name="forceupdate" />
     </Stack>
   );
 }
