@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet, Linking } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert } from 'react-native';
 import { Slot } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,12 +10,21 @@ const WEB_URL = 'https://agit.gg';
 const userAgent = generateUserAgent();
 
 const handleOnShouldStartLoadWithRequest = (event: ShouldStartLoadRequest) => {
-  console.log(event.url);
   if (event.url.startsWith('http://') || event.url.startsWith('https://')) {
     return true;
   }
 
-  Linking.openURL(event.url);
+  Linking.canOpenURL(event.url)
+    .then((canOpen) => {
+      if (canOpen) {
+        Linking.openURL(event.url);
+      } else {
+        Alert.alert('앱이 설치되지 않았습니다.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
   return false;
 };
 
