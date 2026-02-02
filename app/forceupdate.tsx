@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButtonText: {
-    color: '021730',
+    color: '#021730',
     textAlign: 'center',
     fontWeight: '600',
   },
