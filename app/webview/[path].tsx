@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert, AppState, AppStateStatus } from 'react-native';
 import { Slot, useLocalSearchParams } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
@@ -45,6 +46,17 @@ export default function Index() {
     }
   }, [canGoBack]);
 
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        CookieManager.flush();
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, []);
+
   if (Platform.OS === 'web') {
     return <Slot />;
   }
@@ -59,8 +71,8 @@ export default function Index() {
         style={styles.webview}
         javaScriptEnabled
         domStorageEnabled
-        thirdPartyCookiesEnabled
-        sharedCookiesEnabled
+        thirdPartyCookiesEnabled={true}
+        sharedCookiesEnabled={true}
         userAgent={userAgent}
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
         originWhitelist={['*']}
