@@ -18,7 +18,7 @@ function addTokenToCookie(token: string) {
   CookieManager.set('https://agit.gg', {
     name: 'EXPO_PUSH_TOKEN',
     value: token,
-    domain: 'agit.gg',
+    domain: '.agit.gg',
     path: '/',
   });
 }
