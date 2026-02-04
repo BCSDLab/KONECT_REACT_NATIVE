@@ -4,16 +4,11 @@
     "slug": "konect-react-native",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "konect",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "usesAppleSignIn": true,
@@ -26,10 +21,6 @@
     "android": {
       "versionCode": 11,
       "package": "com.bcsdlab.konect",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
       "googleServicesFile": "./google-services.json"
     },
     "plugins": [
@@ -49,8 +40,8 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "resizeMode": "cover",
+          "backgroundColor": "#69D3E0"
         }
       ],
       "expo-font",
