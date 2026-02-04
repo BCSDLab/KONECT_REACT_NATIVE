@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
 function handleRegistrationError(errorMessage: string) {
-  alert(errorMessage);
+  console.error(errorMessage);
   throw new Error(errorMessage);
 }
 

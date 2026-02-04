@@ -20,7 +20,7 @@ export default function RootLayout() {
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then((token) => setExpoPushToken(token ?? ''))
-      .catch((error: any) => setExpoPushToken(`${error}`));
+      .catch((error: any) => console.error(error));
 
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data.path;
