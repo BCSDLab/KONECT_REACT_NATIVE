@@ -40,4 +40,4 @@ yarn-error.*
 
 app-example
 
-google-services.json
+# Note: google-services.json is NOT ignored here so it's included in EAS builds
