@@ -27,14 +27,14 @@ export default function ForceUpdate() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={'dark-content'} />
-      <Text style={styles.title}>업데이트가 필요해요!</Text>
-      <View style={{ height: 10 }} />
-      <Text style={styles.description}>KONECT를 사용하기 위해 업데이트가 필요해요</Text>
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>업데이트가 필요해요!</Text>
+        <Text style={styles.description}>KONECT를 사용하기 위해 업데이트가 필요해요</Text>
+      </View>
       <View style={styles.buttonContainer}>
         <Pressable style={styles.updateButton} onPress={openStore}>
           <Text style={styles.updateButtonText}>업데이트 하러가기</Text>
         </Pressable>
-        <View style={{ height: 12 }} />
         <Pressable style={styles.cancelButton} onPress={() => exitApp()}>
           <Text style={styles.cancelButtonText}>종료하기</Text>
         </Pressable>
@@ -47,16 +47,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  title: {
-    fontSize: 24,
+  textContainer: {
     paddingTop: 32,
     paddingHorizontal: 32,
+    gap: 10,
+  },
+  title: {
+    fontSize: 24,
     textAlign: 'left',
     fontWeight: 'bold',
   },
   description: {
     fontSize: 20,
-    paddingHorizontal: 32,
     textAlign: 'left',
     fontWeight: 'semibold',
   },
@@ -64,11 +66,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     padding: 32,
+    gap: 12,
   },
   updateButton: {
     height: 56,
     backgroundColor: '#323532',
     borderRadius: 8,
+    borderCurve: 'continuous',
     borderWidth: 0.5,
     borderColor: '#D6DAE0',
     alignItems: 'center',
@@ -82,6 +86,7 @@ const styles = StyleSheet.create({
     height: 56,
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
+    borderCurve: 'continuous',
     borderWidth: 0.5,
     borderColor: '#D6DAE0',
     alignItems: 'center',
