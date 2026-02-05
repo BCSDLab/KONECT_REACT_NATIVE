@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../services/notifications';
@@ -25,11 +25,14 @@ function addTokenToCookie(token: string) {
 
 export default function RootLayout() {
   const { push, replace } = useRouter();
-  const [expoPushToken, setExpoPushToken] = useState('');
-
   useEffect(() => {
     registerForPushNotificationsAsync()
-      .then((token) => setExpoPushToken(token ?? ''))
+      .then((token) => {
+        if (token) {
+          addTokenToCookie(token);
+          console.log('Expo Push Token:', token);
+        }
+      })
       .catch((error: any) => console.error(error));
 
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -43,11 +46,6 @@ export default function RootLayout() {
       responseListener.remove();
     };
   }, [push]);
-
-  useEffect(() => {
-    addTokenToCookie(expoPushToken);
-    console.log('Expo Push Token:', expoPushToken);
-  }, [expoPushToken]);
 
   useEffect(() => {
     const checkVersion = async () => {
