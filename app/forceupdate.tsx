@@ -5,7 +5,7 @@ import {
   Platform,
   StatusBar,
   Linking,
-  TouchableOpacity,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { exitApp } from '@logicwind/react-native-exit-app';
@@ -31,13 +31,13 @@ export default function ForceUpdate() {
       <View style={{ height: 10 }} />
       <Text style={styles.description}>KONECT를 사용하기 위해 업데이트가 필요해요</Text>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.updateButton} onPress={openStore}>
+        <Pressable style={styles.updateButton} onPress={openStore}>
           <Text style={styles.updateButtonText}>업데이트 하러가기</Text>
-        </TouchableOpacity>
+        </Pressable>
         <View style={{ height: 12 }} />
-        <TouchableOpacity style={styles.cancelButton} onPress={() => exitApp()}>
+        <Pressable style={styles.cancelButton} onPress={() => exitApp()}>
           <Text style={styles.cancelButtonText}>종료하기</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
