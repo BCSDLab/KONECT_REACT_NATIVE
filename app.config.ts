@@ -1,7 +1,13 @@
 import { ExpoConfig } from 'expo/config';
 
+const APP_ENV = process.env.APP_ENV || 'production';
+const appName = APP_ENV === 'development' ? 'KONECT D' : 'KONECT';
+const packageName = APP_ENV === 'development' ? 'com.bcsd.konect.dev' : 'com.bcsd.konect';
+const googleServicesFile =
+  APP_ENV === 'development' ? './google-services-debug.json' : './google-services.json';
+
 const config: ExpoConfig = {
-  name: 'KONECT',
+  name: appName,
   slug: 'konect-react-native',
   version: '1.0.1',
   orientation: 'portrait',
@@ -13,7 +19,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     usesAppleSignIn: true,
-    bundleIdentifier: 'com.bcsdlab.konect',
+    bundleIdentifier: packageName,
     buildNumber: '5',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -21,8 +27,8 @@ const config: ExpoConfig = {
   },
   android: {
     versionCode: 11,
-    package: 'com.bcsdlab.konect',
-    googleServicesFile: './google-services.json',
+    package: packageName,
+    googleServicesFile: googleServicesFile,
   },
   plugins: [
     [
