@@ -6,6 +6,9 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "APP_ENV": "development"
+      },
       "ios": {
         "resourceClass": "m-medium"
       }
@@ -15,6 +18,9 @@
       "android": {
         "buildType": "apk"
       },
+      "env": {
+        "APP_ENV": "preview"
+      },
       "ios": {
         "resourceClass": "m-medium"
       }
@@ -22,6 +28,9 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "APP_ENV": "production"
       },
       "ios": {
         "resourceClass": "m-medium"
