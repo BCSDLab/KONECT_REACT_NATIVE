@@ -24,7 +24,7 @@ function addTokenToCookie(token: string) {
 }
 
 export default function RootLayout() {
-  const router = useRouter();
+  const { push, replace } = useRouter();
   const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
@@ -35,14 +35,14 @@ export default function RootLayout() {
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data.path;
       if (typeof data === 'string') {
-        router.push(`/webview/${encodeURIComponent(data)}`);
+        push(`/webview/${encodeURIComponent(data)}`);
       }
     });
 
     return () => {
       responseListener.remove();
     };
-  }, [router]);
+  }, [push]);
 
   useEffect(() => {
     addTokenToCookie(expoPushToken);
@@ -53,12 +53,12 @@ export default function RootLayout() {
     const checkVersion = async () => {
       const latest = await getForceUpdate();
       if (latest && appVersion && versionToNumber(latest.version) > versionToNumber(appVersion)) {
-        router.replace('/forceupdate');
+        replace('/forceupdate');
       }
     };
 
     checkVersion();
-  }, [router]);
+  }, [replace]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
