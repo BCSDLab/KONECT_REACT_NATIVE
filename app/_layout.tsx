@@ -24,7 +24,7 @@ function addTokenToCookie(token: string) {
 }
 
 export default function RootLayout() {
-  const { push, replace } = useRouter();
+  const { replace } = useRouter();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function RootLayout() {
     return () => {
       responseListener.remove();
     };
-  }, [push, replace, isReady]);
+  }, [replace, isReady]);
 
   useEffect(() => {
     const checkVersion = async () => {
