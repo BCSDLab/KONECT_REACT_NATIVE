@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert, AppState, AppStateStatus } from 'react-native';
 import { Slot, useLocalSearchParams } from 'expo-router';
 import { WebView } from 'react-native-webview';
@@ -29,13 +29,13 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
-  const [canGoBack, setCanGoBack] = useState(false);
+  const canGoBackRef = useRef(false);
   const local = useLocalSearchParams();
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       const onBackPress = () => {
-        if (webViewRef.current && canGoBack) {
+        if (webViewRef.current && canGoBackRef.current) {
           webViewRef.current.goBack();
           return true;
         }
@@ -44,7 +44,7 @@ export default function Index() {
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => subscription.remove();
     }
-  }, [canGoBack]);
+  }, []);
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -66,7 +66,7 @@ export default function Index() {
       <StatusBar barStyle={'dark-content'} />
       <WebView
         ref={webViewRef}
-        onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
+        onNavigationStateChange={(navState) => { canGoBackRef.current = navState.canGoBack; }}
         source={{ uri: `${WEB_URL}/${local.path ?? ''}` }}
         style={styles.webview}
         javaScriptEnabled

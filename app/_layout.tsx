@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../services/notifications';
@@ -24,41 +24,39 @@ function addTokenToCookie(token: string) {
 }
 
 export default function RootLayout() {
-  const router = useRouter();
-  const [expoPushToken, setExpoPushToken] = useState('');
-
+  const { push, replace } = useRouter();
   useEffect(() => {
     registerForPushNotificationsAsync()
-      .then((token) => setExpoPushToken(token ?? ''))
+      .then((token) => {
+        if (token) {
+          addTokenToCookie(token);
+          console.log('Expo Push Token:', token);
+        }
+      })
       .catch((error: any) => console.error(error));
 
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data.path;
       if (typeof data === 'string') {
-        router.push(`/webview/${encodeURIComponent(data)}`);
+        push(`/webview/${encodeURIComponent(data)}`);
       }
     });
 
     return () => {
       responseListener.remove();
     };
-  }, [router]);
-
-  useEffect(() => {
-    addTokenToCookie(expoPushToken);
-    console.log('Expo Push Token:', expoPushToken);
-  }, [expoPushToken]);
+  }, [push]);
 
   useEffect(() => {
     const checkVersion = async () => {
       const latest = await getForceUpdate();
       if (latest && appVersion && versionToNumber(latest.version) > versionToNumber(appVersion)) {
-        router.replace('/forceupdate');
+        replace('/forceupdate');
       }
     };
 
     checkVersion();
-  }, [router]);
+  }, [replace]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
