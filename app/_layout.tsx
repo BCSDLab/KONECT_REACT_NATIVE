@@ -1,5 +1,5 @@
 import { Stack, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../services/notifications';
@@ -25,7 +25,15 @@ function addTokenToCookie(token: string) {
 
 export default function RootLayout() {
   const { push, replace } = useRouter();
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
+    setIsReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+
     registerForPushNotificationsAsync()
       .then((token) => {
         if (token) {
@@ -35,17 +43,25 @@ export default function RootLayout() {
       })
       .catch((error: any) => console.error(error));
 
+    const response = Notifications.getLastNotificationResponse();
+    if (response?.notification) {
+      const data = response.notification.request.content.data.path;
+      if (typeof data === 'string') {
+        replace(`/webview/${encodeURIComponent(data)}`);
+      }
+    }
+
     const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data.path;
       if (typeof data === 'string') {
-        push(`/webview/${encodeURIComponent(data)}`);
+        replace(`/webview/${encodeURIComponent(data)}`);
       }
     });
 
     return () => {
       responseListener.remove();
     };
-  }, [push]);
+  }, [push, replace, isReady]);
 
   useEffect(() => {
     const checkVersion = async () => {
