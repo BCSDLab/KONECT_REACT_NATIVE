@@ -1,5 +1,14 @@
 import { useRef, useEffect } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet, Linking, Alert, AppState, AppStateStatus } from 'react-native';
+import {
+  BackHandler,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Linking,
+  Alert,
+  AppState,
+  AppStateStatus,
+} from 'react-native';
 import { Slot, useLocalSearchParams } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +17,7 @@ import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
 const WEB_URL = 'https://agit.gg';
+const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const userAgent = generateUserAgent();
 
 const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
@@ -15,7 +25,8 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
   if (url === 'about:blank') return false;
   (async () => {
     try {
-      if (await Linking.canOpenURL(url)) {
+      const scheme = url.split(':')[0]?.toLowerCase();
+      if ((await Linking.canOpenURL(url)) || ALLOWED_URL_SCHEMES.includes(scheme)) {
         await Linking.openURL(url);
       } else {
         Alert.alert('앱이 설치되지 않았습니다.');
@@ -66,7 +77,9 @@ export default function Index() {
       <StatusBar barStyle={'dark-content'} />
       <WebView
         ref={webViewRef}
-        onNavigationStateChange={(navState) => { canGoBackRef.current = navState.canGoBack; }}
+        onNavigationStateChange={(navState) => {
+          canGoBackRef.current = navState.canGoBack;
+        }}
         source={{ uri: `${WEB_URL}/${local.path ?? ''}` }}
         style={styles.webview}
         javaScriptEnabled
