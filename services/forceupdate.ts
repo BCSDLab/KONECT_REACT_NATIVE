@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as Application from 'expo-application';
+import { apiUrl } from '../constants/constants';
 
 interface ForceUpdateVersionResponse {
   platform: string;
@@ -8,8 +9,6 @@ interface ForceUpdateVersionResponse {
 }
 
 const platform = Platform.OS.toUpperCase();
-const APP_ENV = process.env.APP_ENV || 'production';
-const apiUrl = APP_ENV === 'development' ? 'https://api.stage.agit.gg' : 'https://api.agit.gg';
 
 export const appVersion = Application.nativeApplicationVersion;
 

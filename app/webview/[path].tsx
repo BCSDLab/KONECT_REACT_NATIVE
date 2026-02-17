@@ -15,10 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
+import { webUrl } from '../../constants/constants';
 
-const APP_ENV = process.env.APP_ENV || 'production';
-
-const webUrl = APP_ENV === 'development' ? 'https://stage.agit.gg' : 'https://agit.gg';
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const userAgent = generateUserAgent();
 
