@@ -16,7 +16,9 @@ import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 
-const WEB_URL = 'https://agit.gg';
+const APP_ENV = process.env.APP_ENV || 'production';
+
+const webUrl = APP_ENV === 'development' ? 'https://stage.agit.gg' : 'https://agit.gg';
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const userAgent = generateUserAgent();
 
@@ -80,7 +82,7 @@ export default function Index() {
         onNavigationStateChange={(navState) => {
           canGoBackRef.current = navState.canGoBack;
         }}
-        source={{ uri: `${WEB_URL}/${local.path ?? ''}` }}
+        source={{ uri: `${webUrl}/${local.path ?? ''}` }}
         style={styles.webview}
         javaScriptEnabled
         domStorageEnabled

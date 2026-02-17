@@ -8,6 +8,8 @@ interface ForceUpdateVersionResponse {
 }
 
 const platform = Platform.OS.toUpperCase();
+const APP_ENV = process.env.APP_ENV || 'production';
+const apiUrl = APP_ENV === 'development' ? 'https://api.stage.agit.gg' : 'https://api.agit.gg';
 
 export const appVersion = Application.nativeApplicationVersion;
 
@@ -18,7 +20,7 @@ export const versionToNumber = (version: string): number => {
 
 export const getForceUpdate = async (): Promise<ForceUpdateVersionResponse | null> => {
   try {
-    const response = await fetch(`https://api.agit.gg/versions/latest?platform=${platform}`, {
+    const response = await fetch(`${apiUrl}/versions/latest?platform=${platform}`, {
       method: 'GET',
     });
 
