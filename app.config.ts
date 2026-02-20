@@ -1,6 +1,6 @@
 import { ExpoConfig } from 'expo/config';
 
-const APP_ENV = process.env.APP_ENV || 'production';
+const APP_ENV = process.env.EXPO_PUBLIC_APP_ENV || 'production';
 const appName = APP_ENV === 'development' ? 'KONECT D' : 'KONECT';
 const packageName = APP_ENV === 'development' ? 'com.bcsdlab.konect.dev' : 'com.bcsdlab.konect';
 const googleServicesFile =
