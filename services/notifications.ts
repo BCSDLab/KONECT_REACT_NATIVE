@@ -1,7 +1,26 @@
-import { Platform } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { exitApp } from '@logicwind/react-native-exit-app';
+
+let wentToSettings = false;
+
+const notificationPermissionAlert = () =>
+  Alert.alert('알림 권한이 필요해요', '설정으로 이동해서 알림 권한을 허용해주세요.', [
+    {
+      text: '앱 종료',
+      onPress: () => exitApp(),
+      style: 'cancel',
+    },
+    {
+      text: '확인',
+      onPress: () => {
+        wentToSettings = true;
+        Linking.openSettings();
+      },
+    },
+  ]);
 
 function handleRegistrationError(errorMessage: string) {
   console.error(errorMessage);
@@ -24,7 +43,7 @@ export async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
     if (finalStatus !== 'granted') {
-      handleRegistrationError('Permission not granted to get push token for push notification!');
+      notificationPermissionAlert();
       return;
     }
     const projectId =
@@ -46,4 +65,12 @@ export async function registerForPushNotificationsAsync() {
   } else {
     handleRegistrationError('Must use physical device for push notifications');
   }
+}
+
+export function shouldRecheckPermission() {
+  if (wentToSettings) {
+    wentToSettings = false;
+    return true;
+  }
+  return false;
 }
