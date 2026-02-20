@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as Application from 'expo-application';
+import { apiUrl } from '../constants/constants';
 
 interface ForceUpdateVersionResponse {
   platform: string;
@@ -18,7 +19,7 @@ export const versionToNumber = (version: string): number => {
 
 export const getForceUpdate = async (): Promise<ForceUpdateVersionResponse | null> => {
   try {
-    const response = await fetch(`https://api.agit.gg/versions/latest?platform=${platform}`, {
+    const response = await fetch(`${apiUrl}/versions/latest?platform=${platform}`, {
       method: 'GET',
     });
 

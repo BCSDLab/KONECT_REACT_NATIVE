@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
+import { webUrl } from '../../constants/constants';
 
-const WEB_URL = 'https://agit.gg';
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const userAgent = generateUserAgent();
 
@@ -80,7 +80,7 @@ export default function Index() {
         onNavigationStateChange={(navState) => {
           canGoBackRef.current = navState.canGoBack;
         }}
-        source={{ uri: `${WEB_URL}/${local.path ?? ''}` }}
+        source={{ uri: `${webUrl}/${local.path ?? ''}` }}
         style={styles.webview}
         javaScriptEnabled
         domStorageEnabled
