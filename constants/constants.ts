@@ -1,4 +1,4 @@
-const APP_ENV = process.env.APP_ENV || 'production';
+const APP_ENV = process.env.EXPO_PUBLIC_APP_ENV || 'production';
 
 export const apiUrl =
   APP_ENV === 'development' ? 'https://api.stage.agit.gg' : 'https://api.agit.gg';
