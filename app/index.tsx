@@ -1,11 +1,14 @@
 import { StyleSheet, Text, View, StatusBar, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { googleSignIn, configureGoogleSignIn } from '../services/auth/google';
 import GoogleLogo from '../assets/svg/google.svg';
 import KakaoLogo from '../assets/svg/kakao.svg';
 import NaverLogo from '../assets/svg/naver.svg';
 import AppleLogo from '../assets/svg/apple.svg';
 
 export default function Index() {
+  configureGoogleSignIn();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={'dark-content'} />
@@ -20,7 +23,7 @@ export default function Index() {
       <View style={styles.buttonContainer}>
         <Text style={styles.socialText}>소셜 계정으로 로그인</Text>
         <View style={styles.socialButtonContainer}>
-          <Pressable style={styles.googleLoginButton}>
+          <Pressable style={styles.googleLoginButton} onPress={googleSignIn}>
             <GoogleLogo width={18} height={18} />
           </Pressable>
           <Pressable style={styles.kakaoLoginButton}>
