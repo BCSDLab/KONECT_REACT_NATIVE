@@ -9,7 +9,7 @@ const googleServicesFile =
 const config: ExpoConfig = {
   name: appName,
   slug: 'konect-react-native',
-  version: '1.0.3',
+  version: '1.0.4',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'konect',
@@ -20,13 +20,13 @@ const config: ExpoConfig = {
     supportsTablet: true,
     usesAppleSignIn: true,
     bundleIdentifier: packageName,
-    buildNumber: '1010300',
+    buildNumber: '1010400',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
-    versionCode: 1010300,
+    versionCode: 1010400,
     package: packageName,
     googleServicesFile: googleServicesFile,
   },
