@@ -25,6 +25,10 @@ export const googleSignIn = async (): Promise<TokenResponse | null> => {
     const response = await GoogleSignin.signIn();
 
     if (isSuccessResponse(response)) {
+      if (!response.data.idToken) {
+        console.log('Google Sign-In Failed: No ID Token');
+        return null;
+      }
       return await getTokens('google', response.data.idToken ?? '');
     } else {
       console.log('Google Sign-In Cancelled');
