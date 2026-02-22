@@ -14,7 +14,6 @@ export const getTokens = async (
   accessToken: string = '',
   redirectUri: string = 'https://agit.gg'
 ): Promise<TokenResponse | null> => {
-  console.log('Requesting tokens with:', { provider, idToken, accessToken, redirectUri });
   try {
     const response = await fetch(`${apiUrl}/auth/oauth/token`, {
       method: 'POST',

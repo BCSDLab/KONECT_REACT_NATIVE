@@ -25,7 +25,6 @@ export const googleSignIn = async (): Promise<TokenResponse | null> => {
     const response = await GoogleSignin.signIn();
 
     if (isSuccessResponse(response)) {
-      console.log('Google Sign-In Success:', response.data.idToken);
       return await getTokens('google', response.data.idToken ?? '');
     } else {
       console.log('Google Sign-In Cancelled');
