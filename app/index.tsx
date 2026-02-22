@@ -5,11 +5,14 @@ import GoogleLogo from '../assets/svg/google.svg';
 import KakaoLogo from '../assets/svg/kakao.svg';
 import NaverLogo from '../assets/svg/naver.svg';
 import AppleLogo from '../assets/svg/apple.svg';
+import { Redirect } from 'expo-router';
 
 export default function Index() {
   configureGoogleSignIn();
 
   return (
+    <Redirect href="/webview/home" />
+    /*
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle={'dark-content'} />
       <View style={styles.textContainer}>
@@ -38,6 +41,7 @@ export default function Index() {
         </View>
       </View>
     </SafeAreaView>
+    */
   );
 }
 
