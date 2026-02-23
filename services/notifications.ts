@@ -36,13 +36,20 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+    const permission = await Notifications.getPermissionsAsync();
+    let finalStatus = permission.status;
+    let finalPermission = permission;
     if (finalStatus !== 'granted') {
+      const requestedPermission = await Notifications.requestPermissionsAsync();
+      finalStatus = requestedPermission.status;
+      finalPermission = requestedPermission;
+    }
+    const isIosAllowed =
+      Platform.OS === 'ios' &&
+      (finalPermission.ios?.status === Notifications.IosAuthorizationStatus.AUTHORIZED ||
+        finalPermission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL ||
+        finalPermission.ios?.status === Notifications.IosAuthorizationStatus.EPHEMERAL);
+    if (finalStatus !== 'granted' && !isIosAllowed) {
       notificationPermissionAlert();
       return;
     }
