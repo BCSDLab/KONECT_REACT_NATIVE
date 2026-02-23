@@ -43,6 +43,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Update Google Services JSON
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          GOOGLE_SERVICES_JSON_DEBUG: ${{ secrets.GOOGLE_SERVICES_JSON_DEBUG }}
+        run: |
+          echo $GOOGLE_SERVICES_JSON | base64 -di > ./google-services.json
+          echo $GOOGLE_SERVICES_JSON_DEBUG | base64 -di > ./google-services.debug.json
+
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
