@@ -64,3 +64,12 @@ jobs:
             --non-interactive \
             --platform=android \
             --profile=${{ github.event.inputs.profile }}
+
+      - name: Upload Android Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ github.event.inputs.profile }}-${{ github.run_number }}
+          path: |
+            ./*.apk
+            ./*.aab
+          if-no-files-found: error

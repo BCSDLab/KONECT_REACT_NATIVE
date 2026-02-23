@@ -56,3 +56,10 @@ jobs:
             --non-interactive \
             --platform=ios \
             --profile=${{ github.event.inputs.profile }}
+
+      - name: Upload iOS Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ github.event.inputs.profile }}-${{ github.run_number }}
+          path: ./*.ipa
+          if-no-files-found: error
