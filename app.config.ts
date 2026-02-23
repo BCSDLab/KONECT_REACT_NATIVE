@@ -20,7 +20,7 @@ const config: ExpoConfig = {
     supportsTablet: true,
     usesAppleSignIn: true,
     bundleIdentifier: packageName,
-    buildNumber: '1010400',
+    buildNumber: '1010401',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
