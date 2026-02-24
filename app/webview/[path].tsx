@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   BackHandler,
   Platform,
@@ -16,6 +16,7 @@ import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import { webUrl } from '../../constants/constants';
+import { onPushToken } from '../../utils/pushTokenStore';
 
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const userAgent = generateUserAgent();
@@ -41,7 +42,37 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const pageLoadedRef = useRef(false);
+  const pendingTokenRef = useRef<string | null>(null);
   const local = useLocalSearchParams();
+
+  const injectPushToken = useCallback((token: string) => {
+    const safeToken = JSON.stringify(token);
+    webViewRef.current?.injectJavaScript(`
+      window.dispatchEvent(new MessageEvent('message', {
+        data: JSON.stringify({ type: 'PUSH_TOKEN', token: ${safeToken} })
+      }));
+      true;
+    `);
+  }, []);
+
+  useEffect(() => {
+    return onPushToken((token) => {
+      if (pageLoadedRef.current) {
+        injectPushToken(token);
+      } else {
+        pendingTokenRef.current = token;
+      }
+    });
+  }, [injectPushToken]);
+
+  const handleLoadEnd = useCallback(() => {
+    pageLoadedRef.current = true;
+    if (pendingTokenRef.current) {
+      injectPushToken(pendingTokenRef.current);
+      pendingTokenRef.current = null;
+    }
+  }, [injectPushToken]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -90,6 +121,7 @@ export default function Index() {
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
         originWhitelist={['*']}
         startInLoadingState
+        onLoadEnd={handleLoadEnd}
       />
     </SafeAreaView>
   );
