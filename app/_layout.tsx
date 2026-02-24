@@ -5,6 +5,7 @@ import { getForceUpdate, appVersion, versionToNumber } from '../services/forceup
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, shouldRecheckPermission } from '../services/notifications';
 import CookieManager from '@react-native-cookies/cookies';
+import { storePushToken } from '../utils/pushTokenStore';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -36,6 +37,7 @@ export default function RootLayout() {
     const handleToken = (token?: string) => {
       if (token) {
         addTokenToCookie(token);
+        storePushToken(token);
         console.log('Expo Push Token:', token);
       }
     };
