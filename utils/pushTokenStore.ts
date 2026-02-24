@@ -7,6 +7,8 @@ export const storePushToken = (token: string) => {
   _callbacks.length = 0;
 };
 
+export const getStoredToken = (): string | null => _token;
+
 export const onPushToken = (cb: (token: string) => void): (() => void) => {
   if (_token) {
     cb(_token);
