@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Alert } from 'react-native';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, shouldRecheckPermission } from '../services/notifications';
@@ -42,13 +42,13 @@ export default function RootLayout() {
 
     registerForPushNotificationsAsync()
       .then(handleToken)
-      .catch((error: any) => console.error(error));
+      .catch((error: any) => Alert.alert('[DEBUG] Push Token Error', String(error)));
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'active' && shouldRecheckPermission()) {
         registerForPushNotificationsAsync()
           .then(handleToken)
-          .catch((error: any) => console.error(error));
+          .catch((error: any) => Alert.alert('[DEBUG] Push Token Error', String(error)));
       }
     });
 
