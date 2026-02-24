@@ -13,6 +13,15 @@
         "resourceClass": "m-medium"
       }
     },
+    "stage": {
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "development"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "android": {
