@@ -36,7 +36,9 @@ export default function RootLayout() {
     const handleToken = (token?: string) => {
       if (token) {
         addTokenToCookie(token);
-        console.log('Expo Push Token:', token);
+        Alert.alert('[DEBUG] Push Token OK', token);
+      } else {
+        Alert.alert('[DEBUG] No Token', 'token is undefined (permission denied or early return)');
       }
     };
 
