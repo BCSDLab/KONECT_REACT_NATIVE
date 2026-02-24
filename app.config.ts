@@ -9,7 +9,7 @@ const googleServicesFile =
 const config: ExpoConfig = {
   name: appName,
   slug: 'konect-react-native',
-  version: '1.0.5',
+  version: '1.0.6',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'konect',
@@ -26,7 +26,7 @@ const config: ExpoConfig = {
     },
   },
   android: {
-    versionCode: 1010500,
+    versionCode: 1010600,
     package: packageName,
     googleServicesFile: googleServicesFile,
   },
