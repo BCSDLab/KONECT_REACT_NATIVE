@@ -16,7 +16,8 @@
     "stage": {
       "distribution": "store",
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "development"
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_API_ENV": "development"
       },
       "ios": {
         "resourceClass": "m-medium"
