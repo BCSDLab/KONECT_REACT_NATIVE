@@ -1,7 +1,9 @@
 import { ExpoConfig } from 'expo/config';
 
 const APP_ENV = process.env.EXPO_PUBLIC_APP_ENV || 'production';
-const appName = APP_ENV === 'development' ? 'KONECT D' : 'KONECT';
+const API_ENV = process.env.EXPO_PUBLIC_API_ENV || APP_ENV;
+const appName =
+  APP_ENV === 'development' ? 'KONECT D' : API_ENV === 'development' ? 'KONECT S' : 'KONECT';
 const packageName = APP_ENV === 'development' ? 'com.bcsdlab.konect.dev' : 'com.bcsdlab.konect';
 const googleServicesFile =
   APP_ENV === 'development' ? './google-services-debug.json' : './google-services.json';
@@ -20,7 +22,7 @@ const config: ExpoConfig = {
     supportsTablet: true,
     usesAppleSignIn: true,
     bundleIdentifier: packageName,
-    buildNumber: '1010500',
+    buildNumber: '1010604',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },

@@ -11,6 +11,7 @@ on:
           - development
           - preview
           - production
+          - stage
 jobs:
   build:
     runs-on: macos-26

@@ -4,8 +4,9 @@ import { AppState } from 'react-native';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
 import { registerForPushNotificationsAsync, shouldRecheckPermission } from '../services/notifications';
-import CookieManager from '@react-native-cookies/cookies';
-import { storePushToken } from '../utils/pushTokenStore';
+import { storePushToken, initPushTokenStore, getStoredToken } from '../utils/pushTokenStore';
+import { getAccessToken } from '../services/nativeAuthStore';
+import { registerPushToken } from '../services/pushTokenApi';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,14 +17,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-function addTokenToCookie(token: string) {
-  CookieManager.set('https://agit.gg', {
-    name: 'EXPO_PUSH_TOKEN',
-    value: token,
-    domain: '.agit.gg',
-    path: '/',
-  });
-}
 
 export default function RootLayout() {
   const { replace } = useRouter();
@@ -34,11 +27,28 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const handleToken = (token?: string) => {
+    initPushTokenStore();
+  }, []);
+
+  useEffect(() => {
+    let tokenObtained = false;
+    let permissionDenied = false;
+
+    const handleToken = async (token?: string) => {
       if (token) {
-        addTokenToCookie(token);
-        storePushToken(token);
+        tokenObtained = true;
+        permissionDenied = false;
+        await storePushToken(token);
         console.log('Expo Push Token:', token);
+
+        const accessToken = await getAccessToken();
+        if (accessToken) {
+          registerPushToken(token).catch((e) =>
+            console.error('자동 푸시 토큰 등록 실패:', e)
+          );
+        }
+      } else {
+        permissionDenied = true;
       }
     };
 
@@ -47,7 +57,10 @@ export default function RootLayout() {
       .catch((error: any) => console.error(error));
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active' && shouldRecheckPermission()) {
+      if (nextAppState !== 'active') return;
+
+      const fromSettings = shouldRecheckPermission();
+      if (fromSettings || (!tokenObtained && !permissionDenied)) {
         registerForPushNotificationsAsync()
           .then(handleToken)
           .catch((error: any) => console.error(error));
