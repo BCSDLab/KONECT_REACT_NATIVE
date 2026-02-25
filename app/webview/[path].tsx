@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   BackHandler,
   Platform,
@@ -10,20 +10,18 @@ import {
   AppStateStatus,
 } from 'react-native';
 import { Slot, useLocalSearchParams } from 'expo-router';
-import { WebView } from 'react-native-webview';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@react-native-cookies/cookies';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import { webUrl } from '../../constants/constants';
-import { onPushToken, getStoredToken } from '../../utils/pushTokenStore';
+import { getStoredToken } from '../../utils/pushTokenStore';
+import { saveAccessToken, clearAccessToken } from '../../services/nativeAuthStore';
+import { registerPushToken, unregisterPushToken } from '../../services/pushTokenApi';
 
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 
-function buildPushTokenScript(token: string): string {
-  const safeToken = JSON.stringify(token);
-  return `(function(){window.dispatchEvent(new MessageEvent('message',{data:JSON.stringify({type:'PUSH_TOKEN',token:${safeToken}})}));}());true;`;
-}
 const userAgent = generateUserAgent();
 
 const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
@@ -47,27 +45,57 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
-  const pageLoadedRef = useRef(false);
-  const [pushToken, setPushToken] = useState<string | null>(getStoredToken);
   const local = useLocalSearchParams();
 
-  useEffect(() => {
-    return onPushToken(setPushToken);
-  }, []);
+  const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      const { type } = data;
 
-  const injectPushToken = useCallback((token: string) => {
-    webViewRef.current?.injectJavaScript(buildPushTokenScript(token));
-  }, []);
+      if (type === 'LOGIN_COMPLETE') {
+        const { accessToken } = data;
+        if (!accessToken) return;
 
-  // 페이지 로드 후 토큰이 도착한 경우 직접 주입
-  useEffect(() => {
-    if (pushToken && pageLoadedRef.current) {
-      injectPushToken(pushToken);
+        await saveAccessToken(accessToken);
+        console.log('LOGIN_COMPLETE: accessToken 저장 완료');
+
+        const pushToken = getStoredToken();
+        if (pushToken) {
+          try {
+            await registerPushToken(pushToken);
+            console.log('푸시 토큰 백엔드 등록 완료');
+            webViewRef.current?.injectJavaScript(
+              `window.dispatchEvent(new CustomEvent('NOTIFICATION_STATUS', { detail: { registered: true } }));true;`
+            );
+          } catch (e) {
+            console.error('푸시 토큰 등록 실패:', e);
+            webViewRef.current?.injectJavaScript(
+              `window.dispatchEvent(new CustomEvent('NOTIFICATION_STATUS', { detail: { registered: false } }));true;`
+            );
+          }
+        }
+      } else if (type === 'TOKEN_REFRESH') {
+        const { accessToken } = data;
+        if (accessToken) {
+          await saveAccessToken(accessToken);
+          console.log('TOKEN_REFRESH: accessToken 갱신 완료');
+        }
+      } else if (type === 'LOGOUT') {
+        const pushToken = getStoredToken();
+        if (pushToken) {
+          try {
+            await unregisterPushToken(pushToken);
+            console.log('푸시 토큰 백엔드 삭제 완료');
+          } catch (e) {
+            console.error('푸시 토큰 삭제 실패:', e);
+          }
+        }
+        await clearAccessToken();
+        console.log('LOGOUT: accessToken 삭제 완료');
+      }
+    } catch {
+      // JSON 파싱 실패 등 무시
     }
-  }, [pushToken, injectPushToken]);
-
-  const handleLoadEnd = useCallback(() => {
-    pageLoadedRef.current = true;
   }, []);
 
   useEffect(() => {
@@ -117,8 +145,7 @@ export default function Index() {
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
         originWhitelist={['*']}
         startInLoadingState
-        onLoadEnd={handleLoadEnd}
-        injectedJavaScript={pushToken ? buildPushTokenScript(pushToken) : undefined}
+        onMessage={handleMessage}
       />
     </SafeAreaView>
   );
