@@ -13,6 +13,7 @@ import { Slot, useLocalSearchParams } from 'expo-router';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@react-native-cookies/cookies';
+import * as WebBrowser from 'expo-web-browser';
 import { generateUserAgent } from '../../utils/userAgent';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import { webUrl } from '../../constants/constants';
@@ -134,7 +135,7 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle={'dark-content'} />
       <WebView
         ref={webViewRef}
@@ -149,6 +150,10 @@ export default function Index() {
         sharedCookiesEnabled={true}
         userAgent={userAgent}
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
+        setSupportMultipleWindows
+        onOpenWindow={(event) => {
+          WebBrowser.openBrowserAsync(event.nativeEvent.targetUrl);
+        }}
         originWhitelist={['*']}
         startInLoadingState
         onMessage={handleMessage}
