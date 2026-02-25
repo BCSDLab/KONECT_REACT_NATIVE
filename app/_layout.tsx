@@ -57,8 +57,10 @@ export default function RootLayout() {
       .catch((error: any) => console.error(error));
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState !== 'active') return;
+
       const fromSettings = shouldRecheckPermission();
-      if (nextAppState === 'active' && (fromSettings || (!tokenObtained && !permissionDenied))) {
+      if (fromSettings || (!tokenObtained && !permissionDenied)) {
         registerForPushNotificationsAsync()
           .then(handleToken)
           .catch((error: any) => console.error(error));

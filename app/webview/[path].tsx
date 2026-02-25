@@ -21,6 +21,7 @@ import { saveAccessToken, clearAccessToken } from '../../services/nativeAuthStor
 import { registerPushToken, unregisterPushToken } from '../../services/pushTokenApi';
 
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
+const ALLOWED_ORIGINS = [new URL(webUrl).origin];
 
 const userAgent = generateUserAgent();
 
@@ -48,6 +49,11 @@ export default function Index() {
   const local = useLocalSearchParams();
 
   const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
+    const origin = event.nativeEvent.url;
+    if (!origin || !ALLOWED_ORIGINS.some((allowed) => origin.startsWith(allowed))) {
+      return;
+    }
+
     try {
       const data = JSON.parse(event.nativeEvent.data);
       const { type } = data;

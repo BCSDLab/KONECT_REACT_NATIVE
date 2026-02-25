@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 const PUSH_TOKEN_KEY = 'PUSH_TOKEN';
 
@@ -6,7 +6,7 @@ let _token: string | null = null;
 const _callbacks: ((token: string) => void)[] = [];
 
 export async function initPushTokenStore(): Promise<void> {
-  const saved = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
+  const saved = await SecureStore.getItemAsync(PUSH_TOKEN_KEY);
   if (saved) {
     _token = saved;
   }
@@ -14,7 +14,7 @@ export async function initPushTokenStore(): Promise<void> {
 
 export const storePushToken = async (token: string) => {
   _token = token;
-  await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+  await SecureStore.setItemAsync(PUSH_TOKEN_KEY, token);
   _callbacks.forEach((cb) => cb(token));
   _callbacks.length = 0;
 };
