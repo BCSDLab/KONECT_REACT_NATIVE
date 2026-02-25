@@ -135,7 +135,10 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={styles.container}
+      edges={Platform.OS === 'ios' ? ['top', 'left', 'right'] : undefined}
+    >
       <StatusBar barStyle={'dark-content'} />
       <WebView
         ref={webViewRef}
