@@ -2,15 +2,14 @@ import { Alert, Linking, Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
-import { exitApp } from '@logicwind/react-native-exit-app';
 
 let wentToSettings = false;
 
 const notificationPermissionAlert = () =>
   Alert.alert('알림 권한이 필요해요', '설정으로 이동해서 알림 권한을 허용해주세요.', [
     {
-      text: '앱 종료',
-      onPress: () => exitApp(),
+      text: '취소',
+      onPress: () => {},
       style: 'cancel',
     },
     {
