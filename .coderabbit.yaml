@@ -1,0 +1,35 @@
+language: ko-KR
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  path_instructions:
+    - path: "app/webview/\\[path\\].tsx"
+      instructions: |
+        WebView와 네이티브 브릿지 메시지 처리 로직입니다.
+        - postMessage 수신 시 origin 검증이 반드시 이루어지는지 확인하세요.
+        - LOGIN_COMPLETE, TOKEN_REFRESH, LOGOUT 메시지 타입 처리가 누락되지 않았는지 확인하세요.
+        - accessToken은 반드시 expo-secure-store를 통해서만 저장/삭제되어야 합니다.
+
+    - path: "services/**"
+      instructions: |
+        네트워크/플랫폼 의존 사이드이펙트 로직입니다.
+        - 민감 정보(토큰)가 SecureStore 외의 저장소에 저장되지 않는지 확인하세요.
+        - API 호출 시 에러 처리가 적절히 이루어지는지 확인하세요.
+
+    - path: "app/_layout.tsx"
+      instructions: |
+        앱 루트 레이아웃으로 앱 전반의 초기화 로직이 있습니다.
+        - 푸시 토큰 등록, 강제 업데이트 체크, 알림 딥 링크 처리 흐름을 주의 깊게 검토하세요.
+
+chat:
+  auto_reply: true

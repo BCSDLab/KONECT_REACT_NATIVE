@@ -109,7 +109,7 @@ export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="forceupdate" />
+      <Stack.Screen name="forceupdate" options={{ gestureEnabled: false }} />
       <Stack.Screen name="webview/[path]" />
     </Stack>
   );
