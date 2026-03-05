@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import {
+  Alert,
+  BackHandler,
   Image,
   Linking,
   Platform,
@@ -22,10 +25,24 @@ const storeUrl = (): string => {
 };
 
 export default function ForceUpdate() {
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => subscription.remove();
+  }, []);
+
   async function openStore() {
     const url = storeUrl();
     if (!url) return;
-    await Linking.openURL(url);
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        Alert.alert('스토어를 열 수 없습니다', '앱 스토어를 열 수 없습니다. 직접 스토어에서 업데이트해 주세요.');
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('스토어를 열 수 없습니다', '앱 스토어를 열 수 없습니다. 직접 스토어에서 업데이트해 주세요.');
+    }
   }
 
   return (

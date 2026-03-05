@@ -13,7 +13,7 @@ reviews:
       - main
 
   path_instructions:
-    - path: "app/webview/[path].tsx"
+    - path: "app/webview/\\[path\\].tsx"
       instructions: |
         WebView와 네이티브 브릿지 메시지 처리 로직입니다.
         - postMessage 수신 시 origin 검증이 반드시 이루어지는지 확인하세요.
