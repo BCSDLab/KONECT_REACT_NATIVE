@@ -28,9 +28,9 @@ function handleRegistrationError(errorMessage: string) {
 
 export async function registerForPushNotificationsAsync() {
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.DEFAULT,
+    await Notifications.setNotificationChannelAsync('default_notifications', {
+      name: 'default_notifications',
+      importance: Notifications.AndroidImportance.MAX,
     });
   }
 
