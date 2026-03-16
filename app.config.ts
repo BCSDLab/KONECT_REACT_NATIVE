@@ -28,7 +28,7 @@ const config: ExpoConfig = {
     },
   },
   android: {
-    versionCode: 1010601,
+    versionCode: 1010602,
     package: packageName,
     googleServicesFile: googleServicesFile,
   },
