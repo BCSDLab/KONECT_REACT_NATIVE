@@ -61,7 +61,12 @@ const config: ExpoConfig = {
         faceIDPermission: 'Allow KONECT to access your Face ID biometric data.',
       },
     ],
-    'expo-notifications',
+    [
+      'expo-notifications',
+      {
+        defaultChannel: 'default_notifications',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
