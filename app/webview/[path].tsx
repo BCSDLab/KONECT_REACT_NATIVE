@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@react-native-cookies/cookies';
 import * as WebBrowser from 'expo-web-browser';
 import { generateUserAgent } from '../../utils/userAgent';
+import { appVersion } from '../../services/forceupdate';
 import { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import { webUrl } from '../../constants/constants';
 import { getStoredToken } from '../../utils/pushTokenStore';
@@ -25,6 +26,8 @@ const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const ALLOWED_ORIGINS = [new URL(webUrl).origin];
 
 const userAgent = generateUserAgent();
+
+const injectedJavaScript = `window.APP_VERSION = "${appVersion ?? '0.0.0'}";true;`;
 
 const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
   if (/^https?:\/\//i.test(url)) return true;
@@ -152,6 +155,7 @@ export default function Index() {
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
         userAgent={userAgent}
+        injectedJavaScript={injectedJavaScript}
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
         setSupportMultipleWindows
         onOpenWindow={(event) => {
