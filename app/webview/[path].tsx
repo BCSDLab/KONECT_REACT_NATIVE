@@ -12,7 +12,7 @@ import {
 import { Slot, useLocalSearchParams } from 'expo-router';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CookieManager from '@react-native-cookies/cookies';
+import CookieManager from '@preeternal/react-native-cookie-manager';
 import * as WebBrowser from 'expo-web-browser';
 import { generateUserAgent } from '../../utils/userAgent';
 import { appVersion } from '../../services/forceupdate';
@@ -27,7 +27,15 @@ const ALLOWED_ORIGINS = [new URL(webUrl).origin];
 
 const userAgent = generateUserAgent();
 
-const injectedJavaScript = `window.APP_VERSION = "${appVersion ?? '0.0.0'}";true;`;
+const injectedJavaScript = `
+  (function () {
+    const allowedOrigins = ${JSON.stringify(ALLOWED_ORIGINS)};
+    if (allowedOrigins.includes(window.location.origin)) {
+      window.APP_VERSION = ${JSON.stringify(appVersion ?? '0.0.0')};
+    }
+  })();
+  true;
+`;
 
 const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => {
   if (/^https?:\/\//i.test(url)) return true;
@@ -155,6 +163,7 @@ export default function Index() {
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
         userAgent={userAgent}
+        hideKeyboardAccessoryView={Platform.OS === 'ios'}
         injectedJavaScript={injectedJavaScript}
         onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
         setSupportMultipleWindows
