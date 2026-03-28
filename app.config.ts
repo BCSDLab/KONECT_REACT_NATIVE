@@ -16,8 +16,6 @@ const config: ExpoConfig = {
   icon: './assets/images/icon.png',
   scheme: 'konect',
   userInterfaceStyle: 'automatic',
-  newArchEnabled: true,
-  jsEngine: 'hermes',
   ios: {
     supportsTablet: true,
     usesAppleSignIn: true,
@@ -38,9 +36,9 @@ const config: ExpoConfig = {
       {
         android: {
           kotlinVersion: '2.0.21',
-          compileSdkVersion: 35,
+          compileSdkVersion: 36,
           targetSdkVersion: 35,
-          buildToolsVersion: '35.0.0',
+          buildToolsVersion: '36.1.0',
         },
       },
     ],
