@@ -3,8 +3,11 @@ import { useState, useEffect } from 'react';
 import { AppState } from 'react-native';
 import { getForceUpdate, appVersion, versionToNumber } from '../services/forceupdate';
 import * as Notifications from 'expo-notifications';
-import { registerForPushNotificationsAsync, shouldRecheckPermission } from '../services/notifications';
-import { storePushToken, initPushTokenStore, getStoredToken } from '../utils/pushTokenStore';
+import {
+  registerForPushNotificationsAsync,
+  shouldRecheckPermission,
+} from '../services/notifications';
+import { storePushToken, initPushTokenStore } from '../utils/pushTokenStore';
 import { getAccessToken } from '../services/nativeAuthStore';
 import { registerPushToken } from '../services/pushTokenApi';
 
@@ -16,7 +19,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
-
 
 export default function RootLayout() {
   const { replace } = useRouter();
@@ -43,9 +45,7 @@ export default function RootLayout() {
 
         const accessToken = await getAccessToken();
         if (accessToken) {
-          registerPushToken(token).catch((e) =>
-            console.error('자동 푸시 토큰 등록 실패:', e)
-          );
+          registerPushToken(token).catch((e) => console.error('자동 푸시 토큰 등록 실패:', e));
         }
       } else {
         permissionDenied = true;
@@ -75,20 +75,19 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
 
-    const response = Notifications.getLastNotificationResponse();
-    if (response?.notification) {
-      const data = response.notification.request.content.data.path;
-      if (typeof data === 'string') {
-        replace(`/webview/${encodeURIComponent(data)}`);
+    const handleNotificationResponse = (
+      response: Notifications.NotificationResponse | null | undefined,
+    ) => {
+      const path = response?.notification.request.content.data?.path;
+      if (typeof path === 'string') {
+        replace(`/webview/${encodeURIComponent(path)}`);
       }
-    }
+    };
 
-    const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data.path;
-      if (typeof data === 'string') {
-        replace(`/webview/${encodeURIComponent(data)}`);
-      }
-    });
+    handleNotificationResponse(Notifications.getLastNotificationResponse());
+
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
 
     return () => {
       responseListener.remove();
