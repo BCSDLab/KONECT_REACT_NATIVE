@@ -74,10 +74,9 @@ async function deactivateKeepAwakeIfNeeded(): Promise<void> {
 
   try {
     await deactivateKeepAwake(TIMER_KEEP_AWAKE_TAG);
+    isKeepAwakeActive = false;
   } catch (error) {
     console.error('타이머 keep-awake 비활성화 실패:', error);
-  } finally {
-    isKeepAwakeActive = false;
   }
 }
 
