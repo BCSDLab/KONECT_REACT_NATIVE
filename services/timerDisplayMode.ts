@@ -91,8 +91,9 @@ async function dimScreenIfNeeded(dimScreen: boolean, brightnessLevel?: number): 
       const isBrightnessAvailable = await Brightness.isAvailableAsync();
       if (!isBrightnessAvailable) return;
 
-      savedIosBrightness ??= await Brightness.getBrightnessAsync();
+      const currentBrightness = savedIosBrightness ?? (await Brightness.getBrightnessAsync());
       await Brightness.setBrightnessAsync(targetBrightness);
+      savedIosBrightness = currentBrightness;
       isScreenDimmed = true;
       appliedBrightnessLevel = targetBrightness;
     }

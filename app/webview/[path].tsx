@@ -101,7 +101,11 @@ export default function Index() {
 
   const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
     const messageOrigin = getUrlOrigin(event.nativeEvent.url);
-    if (!ALLOWED_ORIGINS.includes(messageOrigin)) {
+    if (
+      messageOrigin === null ||
+      messageOrigin === 'null' ||
+      !ALLOWED_ORIGINS.includes(messageOrigin)
+    ) {
       return;
     }
 
