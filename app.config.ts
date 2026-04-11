@@ -20,13 +20,13 @@ const config: ExpoConfig = {
     supportsTablet: true,
     usesAppleSignIn: true,
     bundleIdentifier: packageName,
-    buildNumber: '1010800',
+    buildNumber: '1010801',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
   },
   android: {
-    versionCode: 1010800,
+    versionCode: 1010801,
     package: packageName,
     googleServicesFile: googleServicesFile,
   },
