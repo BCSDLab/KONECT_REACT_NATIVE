@@ -40,11 +40,35 @@ function getTargetBrightness(brightnessLevel?: number): number {
   return Math.min(ANDROID_MAX_BRIGHTNESS, Math.max(MIN_BRIGHTNESS, brightnessLevel));
 }
 
-async function setScreenBrightness(brightness: number): Promise<void> {
+async function setScreenBrightness(brightness: number): Promise<boolean> {
   const isBrightnessAvailable = await Brightness.isAvailableAsync();
-  if (!isBrightnessAvailable) return;
+  if (!isBrightnessAvailable) return false;
 
   await Brightness.setBrightnessAsync(brightness);
+  return true;
+}
+
+async function activateKeepAwakeIfNeeded(): Promise<void> {
+  if (isKeepAwakeActive) return;
+
+  try {
+    await activateKeepAwakeAsync(TIMER_KEEP_AWAKE_TAG);
+    isKeepAwakeActive = true;
+  } catch (error) {
+    console.error('타이머 keep-awake 활성화 실패:', error);
+  }
+}
+
+async function deactivateKeepAwakeIfNeeded(): Promise<void> {
+  if (!isKeepAwakeActive) return;
+
+  try {
+    await deactivateKeepAwake(TIMER_KEEP_AWAKE_TAG);
+  } catch (error) {
+    console.error('타이머 keep-awake 비활성화 실패:', error);
+  } finally {
+    isKeepAwakeActive = false;
+  }
 }
 
 async function dimScreenIfNeeded(dimScreen: boolean, brightnessLevel?: number): Promise<void> {
@@ -55,15 +79,20 @@ async function dimScreenIfNeeded(dimScreen: boolean, brightnessLevel?: number): 
 
   try {
     if (Platform.OS === 'android') {
-      await setScreenBrightness(targetBrightness);
+      const isBrightnessApplied = await setScreenBrightness(targetBrightness);
+      if (!isBrightnessApplied) return;
+
       isScreenDimmed = true;
       appliedBrightnessLevel = targetBrightness;
       return;
     }
 
     if (Platform.OS === 'ios') {
+      const isBrightnessAvailable = await Brightness.isAvailableAsync();
+      if (!isBrightnessAvailable) return;
+
       savedIosBrightness ??= await Brightness.getBrightnessAsync();
-      await setScreenBrightness(targetBrightness);
+      await Brightness.setBrightnessAsync(targetBrightness);
       isScreenDimmed = true;
       appliedBrightnessLevel = targetBrightness;
     }
@@ -99,31 +128,23 @@ export async function enableTimerDisplayMode({
   dimScreen = true,
 }: TimerDisplayModeOptions = {}): Promise<void> {
   return enqueueDisplayModeOperation(async () => {
-    if (keepAwake && !isKeepAwakeActive) {
-      try {
-        await activateKeepAwakeAsync(TIMER_KEEP_AWAKE_TAG);
-        isKeepAwakeActive = true;
-      } catch (error) {
-        console.error('타이머 keep-awake 활성화 실패:', error);
-      }
+    if (keepAwake) {
+      await activateKeepAwakeIfNeeded();
+    } else {
+      await deactivateKeepAwakeIfNeeded();
     }
 
-    await dimScreenIfNeeded(dimScreen, brightnessLevel);
+    if (dimScreen) {
+      await dimScreenIfNeeded(true, brightnessLevel);
+    } else {
+      await restoreScreenBrightness();
+    }
   });
 }
 
 export async function disableTimerDisplayMode(): Promise<void> {
   return enqueueDisplayModeOperation(async () => {
     await restoreScreenBrightness();
-
-    if (!isKeepAwakeActive) return;
-
-    try {
-      await deactivateKeepAwake(TIMER_KEEP_AWAKE_TAG);
-    } catch (error) {
-      console.error('타이머 keep-awake 비활성화 실패:', error);
-    } finally {
-      isKeepAwakeActive = false;
-    }
+    await deactivateKeepAwakeIfNeeded();
   });
 }
