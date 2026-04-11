@@ -19,6 +19,12 @@ let isKeepAwakeActive = false;
 let isScreenDimmed = false;
 let savedIosBrightness: number | null = null;
 let appliedBrightnessLevel: number | null = null;
+let displayModeOperation: Promise<void> = Promise.resolve();
+
+function enqueueDisplayModeOperation(task: () => Promise<void>): Promise<void> {
+  displayModeOperation = displayModeOperation.then(task, task);
+  return displayModeOperation;
+}
 
 function getTargetBrightness(brightnessLevel?: number): number {
   const defaultBrightness = Platform.OS === 'ios' ? IOS_DIMMED_SCREEN_BRIGHTNESS : ANDROID_DIMMED_SCREEN_BRIGHTNESS;
@@ -92,28 +98,32 @@ export async function enableTimerDisplayMode({
   keepAwake = true,
   dimScreen = true,
 }: TimerDisplayModeOptions = {}): Promise<void> {
-  if (keepAwake && !isKeepAwakeActive) {
-    try {
-      await activateKeepAwakeAsync(TIMER_KEEP_AWAKE_TAG);
-      isKeepAwakeActive = true;
-    } catch (error) {
-      console.error('타이머 keep-awake 활성화 실패:', error);
+  return enqueueDisplayModeOperation(async () => {
+    if (keepAwake && !isKeepAwakeActive) {
+      try {
+        await activateKeepAwakeAsync(TIMER_KEEP_AWAKE_TAG);
+        isKeepAwakeActive = true;
+      } catch (error) {
+        console.error('타이머 keep-awake 활성화 실패:', error);
+      }
     }
-  }
 
-  await dimScreenIfNeeded(dimScreen, brightnessLevel);
+    await dimScreenIfNeeded(dimScreen, brightnessLevel);
+  });
 }
 
 export async function disableTimerDisplayMode(): Promise<void> {
-  await restoreScreenBrightness();
+  return enqueueDisplayModeOperation(async () => {
+    await restoreScreenBrightness();
 
-  if (!isKeepAwakeActive) return;
+    if (!isKeepAwakeActive) return;
 
-  try {
-    await deactivateKeepAwake(TIMER_KEEP_AWAKE_TAG);
-  } catch (error) {
-    console.error('타이머 keep-awake 비활성화 실패:', error);
-  } finally {
-    isKeepAwakeActive = false;
-  }
+    try {
+      await deactivateKeepAwake(TIMER_KEEP_AWAKE_TAG);
+    } catch (error) {
+      console.error('타이머 keep-awake 비활성화 실패:', error);
+    } finally {
+      isKeepAwakeActive = false;
+    }
+  });
 }

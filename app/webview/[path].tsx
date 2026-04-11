@@ -91,8 +91,14 @@ export default function Index() {
   }, []);
 
   const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
-    const origin = event.nativeEvent.url;
-    if (!origin || !ALLOWED_ORIGINS.some((allowed) => origin.startsWith(allowed))) {
+    let messageOrigin: string;
+    try {
+      messageOrigin = new URL(event.nativeEvent.url).origin;
+    } catch {
+      return;
+    }
+
+    if (!ALLOWED_ORIGINS.includes(messageOrigin)) {
       return;
     }
 
