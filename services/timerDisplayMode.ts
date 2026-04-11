@@ -3,6 +3,7 @@ import * as Brightness from 'expo-brightness';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 const TIMER_KEEP_AWAKE_TAG = 'study-timer';
+const DIM_SCREEN_DELAY_MS = 10000;
 const IOS_DIMMED_SCREEN_BRIGHTNESS = 0.35;
 const ANDROID_DIMMED_SCREEN_BRIGHTNESS = 0.28;
 const MIN_BRIGHTNESS = 0.05;
@@ -20,14 +21,23 @@ let isScreenDimmed = false;
 let savedIosBrightness: number | null = null;
 let appliedBrightnessLevel: number | null = null;
 let displayModeOperation: Promise<void> = Promise.resolve();
+let dimScreenTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function enqueueDisplayModeOperation(task: () => Promise<void>): Promise<void> {
   displayModeOperation = displayModeOperation.then(task, task);
   return displayModeOperation;
 }
 
+function clearPendingDimScreen(): void {
+  if (dimScreenTimeout === null) return;
+
+  clearTimeout(dimScreenTimeout);
+  dimScreenTimeout = null;
+}
+
 function getTargetBrightness(brightnessLevel?: number): number {
-  const defaultBrightness = Platform.OS === 'ios' ? IOS_DIMMED_SCREEN_BRIGHTNESS : ANDROID_DIMMED_SCREEN_BRIGHTNESS;
+  const defaultBrightness =
+    Platform.OS === 'ios' ? IOS_DIMMED_SCREEN_BRIGHTNESS : ANDROID_DIMMED_SCREEN_BRIGHTNESS;
 
   if (brightnessLevel == null || Number.isNaN(brightnessLevel)) {
     return defaultBrightness;
@@ -103,6 +113,8 @@ async function dimScreenIfNeeded(dimScreen: boolean, brightnessLevel?: number): 
 }
 
 async function restoreScreenBrightness(): Promise<void> {
+  clearPendingDimScreen();
+
   if (!isScreenDimmed) return;
 
   try {
@@ -123,6 +135,17 @@ async function restoreScreenBrightness(): Promise<void> {
   }
 }
 
+function scheduleScreenDim(brightnessLevel?: number): void {
+  clearPendingDimScreen();
+
+  dimScreenTimeout = setTimeout(() => {
+    dimScreenTimeout = null;
+    void enqueueDisplayModeOperation(async () => {
+      await dimScreenIfNeeded(true, brightnessLevel);
+    });
+  }, DIM_SCREEN_DELAY_MS);
+}
+
 export async function enableTimerDisplayMode({
   brightnessLevel,
   keepAwake = true,
@@ -135,11 +158,17 @@ export async function enableTimerDisplayMode({
       await deactivateKeepAwakeIfNeeded();
     }
 
-    if (dimScreen) {
-      await dimScreenIfNeeded(true, brightnessLevel);
-    } else {
+    if (!dimScreen) {
       await restoreScreenBrightness();
+      return;
     }
+
+    if (isScreenDimmed) {
+      await dimScreenIfNeeded(true, brightnessLevel);
+      return;
+    }
+
+    scheduleScreenDim(brightnessLevel);
   });
 }
 
