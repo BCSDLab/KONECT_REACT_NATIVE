@@ -29,6 +29,14 @@ const NATIVE_BACK_REQUEST_EVENT = 'KONECT_NATIVE_BACK_REQUEST';
 
 const userAgent = generateUserAgent();
 
+function getUrlOrigin(url: string): string | null {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
 type NativeBridgeMessage =
   | { type: 'LOGIN_COMPLETE'; accessToken?: string }
   | { type: 'TOKEN_REFRESH'; accessToken?: string }
@@ -75,6 +83,7 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const currentOriginRef = useRef<string | null>(ALLOWED_ORIGINS[0]);
   const timerDisplayModeRef = useRef<TimerDisplayModeState>({
     brightnessLevel: undefined,
     isActive: false,
@@ -91,13 +100,7 @@ export default function Index() {
   }, []);
 
   const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
-    let messageOrigin: string;
-    try {
-      messageOrigin = new URL(event.nativeEvent.url).origin;
-    } catch {
-      return;
-    }
-
+    const messageOrigin = getUrlOrigin(event.nativeEvent.url);
     if (!ALLOWED_ORIGINS.includes(messageOrigin)) {
       return;
     }
@@ -186,7 +189,11 @@ export default function Index() {
   useEffect(() => {
     if (Platform.OS === 'android') {
       const onBackPress = () => {
-        if (timerDisplayModeRef.current.isActive) {
+        const isAllowedOrigin = currentOriginRef.current
+          ? ALLOWED_ORIGINS.includes(currentOriginRef.current)
+          : false;
+
+        if (timerDisplayModeRef.current.isActive && isAllowedOrigin) {
           requestWebBackConfirmation();
           return true;
         }
@@ -242,6 +249,7 @@ export default function Index() {
           ref={webViewRef}
           onNavigationStateChange={(navState) => {
             canGoBackRef.current = navState.canGoBack;
+            currentOriginRef.current = getUrlOrigin(navState.url);
           }}
           source={{ uri: `${webUrl}/${local.path ?? ''}` }}
           style={styles.webview}
