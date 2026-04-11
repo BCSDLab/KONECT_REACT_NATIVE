@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import {
   BackHandler,
   Platform,
@@ -9,7 +9,7 @@ import {
   AppState,
   AppStateStatus,
 } from 'react-native';
-import { Slot, useLocalSearchParams } from 'expo-router';
+import { Slot, Stack, useLocalSearchParams } from 'expo-router';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CookieManager from '@preeternal/react-native-cookie-manager';
@@ -21,11 +21,28 @@ import { webUrl } from '../../constants/constants';
 import { getStoredToken } from '../../utils/pushTokenStore';
 import { saveAccessToken, clearAccessToken } from '../../services/nativeAuthStore';
 import { registerPushToken, unregisterPushToken } from '../../services/pushTokenApi';
+import { disableTimerDisplayMode, enableTimerDisplayMode } from '../../services/timerDisplayMode';
 
 const ALLOWED_URL_SCHEMES = ['kakaotalk', 'nidlogin'];
 const ALLOWED_ORIGINS = [new URL(webUrl).origin];
+const NATIVE_BACK_REQUEST_EVENT = 'KONECT_NATIVE_BACK_REQUEST';
 
 const userAgent = generateUserAgent();
+
+type NativeBridgeMessage =
+  | { type: 'LOGIN_COMPLETE'; accessToken?: string }
+  | { type: 'TOKEN_REFRESH'; accessToken?: string }
+  | { type: 'LOGOUT' }
+  | { type: 'TIMER_ACTIVE'; keepAwake?: boolean; dimScreen?: boolean; brightnessLevel?: number }
+  | { type: 'TIMER_INACTIVE' }
+  | { type: 'NAVIGATE_BACK' };
+
+interface TimerDisplayModeState {
+  brightnessLevel?: number;
+  dimScreen: boolean;
+  isActive: boolean;
+  keepAwake: boolean;
+}
 
 const injectedJavaScript = `
   (function () {
@@ -58,7 +75,20 @@ const handleOnShouldStartLoadWithRequest = ({ url }: ShouldStartLoadRequest) => 
 export default function Index() {
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const timerDisplayModeRef = useRef<TimerDisplayModeState>({
+    brightnessLevel: undefined,
+    isActive: false,
+    keepAwake: true,
+    dimScreen: true,
+  });
   const local = useLocalSearchParams();
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
+  const requestWebBackConfirmation = useCallback(() => {
+    webViewRef.current?.injectJavaScript(
+      `window.dispatchEvent(new Event(${JSON.stringify(NATIVE_BACK_REQUEST_EVENT)}));true;`
+    );
+  }, []);
 
   const handleMessage = useCallback(async (event: WebViewMessageEvent) => {
     const origin = event.nativeEvent.url;
@@ -67,7 +97,7 @@ export default function Index() {
     }
 
     try {
-      const data = JSON.parse(event.nativeEvent.data);
+      const data: NativeBridgeMessage = JSON.parse(event.nativeEvent.data);
       const { type } = data;
 
       if (type === 'LOGIN_COMPLETE') {
@@ -110,6 +140,37 @@ export default function Index() {
         }
         await clearAccessToken();
         console.log('LOGOUT: accessToken 삭제 완료');
+      } else if (type === 'TIMER_ACTIVE') {
+        const keepAwake = data.keepAwake !== false;
+        const dimScreen = data.dimScreen !== false;
+        const brightnessLevel = data.brightnessLevel;
+
+        timerDisplayModeRef.current = {
+          brightnessLevel,
+          isActive: true,
+          keepAwake,
+          dimScreen,
+        };
+        setIsTimerActive(true);
+
+        await enableTimerDisplayMode({ keepAwake, dimScreen, brightnessLevel });
+      } else if (type === 'TIMER_INACTIVE') {
+        timerDisplayModeRef.current = {
+          ...timerDisplayModeRef.current,
+          isActive: false,
+        };
+        setIsTimerActive(false);
+
+        await disableTimerDisplayMode();
+      } else if (type === 'NAVIGATE_BACK') {
+        if (webViewRef.current && canGoBackRef.current) {
+          webViewRef.current.goBack();
+          return;
+        }
+
+        if (Platform.OS === 'android') {
+          BackHandler.exitApp();
+        }
       }
     } catch {
       // JSON 파싱 실패 등 무시
@@ -119,6 +180,11 @@ export default function Index() {
   useEffect(() => {
     if (Platform.OS === 'android') {
       const onBackPress = () => {
+        if (timerDisplayModeRef.current.isActive) {
+          requestWebBackConfirmation();
+          return true;
+        }
+
         if (webViewRef.current && canGoBackRef.current) {
           webViewRef.current.goBack();
           return true;
@@ -128,17 +194,30 @@ export default function Index() {
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => subscription.remove();
     }
-  }, []);
+  }, [requestWebBackConfirmation]);
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         CookieManager.flush();
+        void disableTimerDisplayMode();
+        return;
+      }
+
+      if (nextAppState === 'active' && timerDisplayModeRef.current.isActive) {
+        void enableTimerDisplayMode({
+          brightnessLevel: timerDisplayModeRef.current.brightnessLevel,
+          keepAwake: timerDisplayModeRef.current.keepAwake,
+          dimScreen: timerDisplayModeRef.current.dimScreen,
+        });
       }
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      void disableTimerDisplayMode();
+    };
   }, []);
 
   if (Platform.OS === 'web') {
@@ -146,35 +225,38 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={Platform.OS === 'ios' ? ['top', 'left', 'right'] : undefined}
-    >
-      <StatusBar barStyle={'dark-content'} />
-      <WebView
-        ref={webViewRef}
-        onNavigationStateChange={(navState) => {
-          canGoBackRef.current = navState.canGoBack;
-        }}
-        source={{ uri: `${webUrl}/${local.path ?? ''}` }}
-        style={styles.webview}
-        javaScriptEnabled
-        domStorageEnabled
-        thirdPartyCookiesEnabled={true}
-        sharedCookiesEnabled={true}
-        userAgent={userAgent}
-        hideKeyboardAccessoryView={Platform.OS === 'ios'}
-        injectedJavaScript={injectedJavaScript}
-        onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
-        setSupportMultipleWindows
-        onOpenWindow={(event) => {
-          WebBrowser.openBrowserAsync(event.nativeEvent.targetUrl);
-        }}
-        originWhitelist={['*']}
-        startInLoadingState
-        onMessage={handleMessage}
-      />
-    </SafeAreaView>
+    <>
+      <Stack.Screen options={{ gestureEnabled: Platform.OS === 'ios' ? !isTimerActive : true }} />
+      <SafeAreaView
+        style={styles.container}
+        edges={Platform.OS === 'ios' ? ['top', 'left', 'right'] : undefined}
+      >
+        <StatusBar barStyle={'dark-content'} />
+        <WebView
+          ref={webViewRef}
+          onNavigationStateChange={(navState) => {
+            canGoBackRef.current = navState.canGoBack;
+          }}
+          source={{ uri: `${webUrl}/${local.path ?? ''}` }}
+          style={styles.webview}
+          javaScriptEnabled
+          domStorageEnabled
+          thirdPartyCookiesEnabled={true}
+          sharedCookiesEnabled={true}
+          userAgent={userAgent}
+          hideKeyboardAccessoryView={Platform.OS === 'ios'}
+          injectedJavaScript={injectedJavaScript}
+          onShouldStartLoadWithRequest={handleOnShouldStartLoadWithRequest}
+          setSupportMultipleWindows
+          onOpenWindow={(event) => {
+            WebBrowser.openBrowserAsync(event.nativeEvent.targetUrl);
+          }}
+          originWhitelist={['*']}
+          startInLoadingState
+          onMessage={handleMessage}
+        />
+      </SafeAreaView>
+    </>
   );
 }
 
