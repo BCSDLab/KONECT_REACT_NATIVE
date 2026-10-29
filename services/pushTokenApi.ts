@@ -5,7 +5,7 @@ import { getAccessToken } from './nativeAuthStore';
 const REQUEST_TIMEOUT_MS = 10_000;
 const REGISTERED_PUSH_TOKEN_KEY = 'REGISTERED_PUSH_TOKEN';
 
-let registeredPushTokenCache: string | null | undefined;
+let registrationCache: string | null | undefined;
 const inFlightRegisterRequests = new Map<string, Promise<void>>();
 
 function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> {
@@ -17,22 +17,42 @@ function fetchWithTimeout(url: string, options: RequestInit): Promise<Response> 
   );
 }
 
-async function getRegisteredPushToken(): Promise<string | null> {
-  if (registeredPushTokenCache !== undefined) {
-    return registeredPushTokenCache;
+function getUserIdFromAccessToken(accessToken: string): string | null {
+  try {
+    const payload = accessToken.split('.')[1];
+    if (!payload) return null;
+
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const { id } = JSON.parse(atob(padded)) as { id?: unknown };
+
+    return typeof id === 'number' || typeof id === 'string' ? String(id) : null;
+  } catch {
+    return null;
+  }
+}
+
+// 세션 만료로 LOGOUT 없이 다른 사용자가 로그인할 수 있어, 등록 여부를 토큰만이 아니라 사용자 단위로 기억한다.
+function toRegistrationKey(userId: string, pushToken: string): string {
+  return `${userId}:${pushToken}`;
+}
+
+async function getRegistration(): Promise<string | null> {
+  if (registrationCache !== undefined) {
+    return registrationCache;
   }
 
-  registeredPushTokenCache = await SecureStore.getItemAsync(REGISTERED_PUSH_TOKEN_KEY);
-  return registeredPushTokenCache;
+  registrationCache = await SecureStore.getItemAsync(REGISTERED_PUSH_TOKEN_KEY);
+  return registrationCache;
 }
 
-async function setRegisteredPushToken(token: string): Promise<void> {
-  registeredPushTokenCache = token;
-  await SecureStore.setItemAsync(REGISTERED_PUSH_TOKEN_KEY, token);
+async function setRegistration(registrationKey: string): Promise<void> {
+  registrationCache = registrationKey;
+  await SecureStore.setItemAsync(REGISTERED_PUSH_TOKEN_KEY, registrationKey);
 }
 
-async function clearRegisteredPushToken(): Promise<void> {
-  registeredPushTokenCache = null;
+async function clearRegistration(): Promise<void> {
+  registrationCache = null;
   await SecureStore.deleteItemAsync(REGISTERED_PUSH_TOKEN_KEY);
 }
 
@@ -43,12 +63,15 @@ export async function registerPushToken(pushToken: string): Promise<void> {
     return;
   }
 
-  const alreadyRegistered = await getRegisteredPushToken();
-  if (alreadyRegistered === pushToken) {
+  const userId = getUserIdFromAccessToken(accessToken);
+  const registrationKey = userId ? toRegistrationKey(userId, pushToken) : null;
+
+  if (registrationKey && (await getRegistration()) === registrationKey) {
     return;
   }
 
-  const inFlight = inFlightRegisterRequests.get(pushToken);
+  const inFlightKey = registrationKey ?? pushToken;
+  const inFlight = inFlightRegisterRequests.get(inFlightKey);
   if (inFlight) {
     return inFlight;
   }
@@ -68,24 +91,23 @@ export async function registerPushToken(pushToken: string): Promise<void> {
       const isDuplicateTokenError =
         res.status === 409 || errorBody.includes('uq_notification_device_token_user_id');
 
-      if (isDuplicateTokenError) {
-        await setRegisteredPushToken(pushToken);
-        return;
+      if (!isDuplicateTokenError) {
+        throw new Error(`registerPushToken failed: ${res.status}`);
       }
-
-      throw new Error(`registerPushToken failed: ${res.status}`);
     }
 
-    await setRegisteredPushToken(pushToken);
+    if (registrationKey) {
+      await setRegistration(registrationKey);
+    }
   })();
 
-  inFlightRegisterRequests.set(pushToken, request);
+  inFlightRegisterRequests.set(inFlightKey, request);
 
   try {
     await request;
   } finally {
-    if (inFlightRegisterRequests.get(pushToken) === request) {
-      inFlightRegisterRequests.delete(pushToken);
+    if (inFlightRegisterRequests.get(inFlightKey) === request) {
+      inFlightRegisterRequests.delete(inFlightKey);
     }
   }
 }
@@ -110,8 +132,8 @@ export async function unregisterPushToken(pushToken: string): Promise<void> {
     throw new Error(`unregisterPushToken failed: ${res.status}`);
   }
 
-  const registeredToken = await getRegisteredPushToken();
-  if (registeredToken === pushToken) {
-    await clearRegisteredPushToken();
+  const registration = await getRegistration();
+  if (registration === pushToken || registration?.endsWith(`:${pushToken}`)) {
+    await clearRegistration();
   }
 }
